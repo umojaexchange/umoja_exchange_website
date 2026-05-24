@@ -1,54 +1,59 @@
 #!/usr/bin/env bash
 # =============================================================================
-# scripts/build.sh — Railway build script
-# Called by railway.toml buildCommand = "make railway-build"
+# scripts/build.sh — Railway build pipeline
+# Called by: make railway-build  (via nixpacks.toml / railway.toml)
 # =============================================================================
-set -euo pipefail
+set -eo pipefail          # -e: exit on error  -o pipefail: catch pipe fails
+                           # NOTE: no -u so missing env vars don't abort
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Umoja Exchange — Build"
+echo "  Umoja Exchange — Railway Build"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# ── 1. Frontend ────────────────────────────────────────────────────
+# ── Sanity: confirm tools exist ────────────────────────────────────
+echo "▶ node $(node --version)  npm $(npm --version)  python $(python --version)"
+
+# ── 1. Frontend — install deps ─────────────────────────────────────
 echo ""
 echo "▶ [1/5] Installing frontend dependencies..."
 cd frontend
-npm ci --prefer-offline
+# Use npm install (not ci) so a missing/stale lock-file doesn't abort
+npm install --legacy-peer-deps
+echo "✅  npm install done"
 
+# ── 2. Frontend — Vite build ───────────────────────────────────────
 echo ""
-echo "▶ [2/5] Building Vue 3 → backend/frontend_build/ ..."
+echo "▶ [2/5] Building Vue 3 SPA..."
 npm run build
+echo "✅  Vite build done"
 cd ..
 
-echo "✅  Frontend build complete"
-ls -lh backend/frontend_build/
+ls -lh backend/frontend_build/ | head -5
 
-# ── 2. Backend Python deps ─────────────────────────────────────────
+# ── 3. Python deps ─────────────────────────────────────────────────
 echo ""
 echo "▶ [3/5] Installing Python dependencies..."
-pip install -r backend/requirements/production.txt
+pip install --no-cache-dir --break-system-packages -r backend/requirements/production.txt
+echo "✅  pip install done"
 
-# ── 3. Django collectstatic ────────────────────────────────────────
+# ── 4. collectstatic ───────────────────────────────────────────────
 echo ""
 echo "▶ [4/5] Collecting static files..."
 cd backend
-python manage.py collectstatic --noinput --settings=config.settings.production
-echo "✅  Static files collected ($(find staticfiles -type f | wc -l) files)"
+python manage.py collectstatic --noinput
+COUNT=$(find staticfiles -type f | wc -l)
+echo "✅  $COUNT static files collected"
 
-# ── 4. Migrate ─────────────────────────────────────────────────────
+# ── 5. Migrate + default admin ─────────────────────────────────────
 echo ""
-echo "▶ [5/5] Running database migrations..."
-python manage.py migrate --settings=config.settings.production
-
-# ── 5. Default admin ───────────────────────────────────────────────
-echo ""
-echo "▶ [+] Creating default admin user if not exists..."
-python manage.py create_default_admin --settings=config.settings.production
+echo "▶ [5/5] Running migrations + creating default admin..."
+python manage.py migrate --run-syncdb
+python manage.py create_default_admin
 cd ..
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  ✅  Build finished successfully"
+echo "  ✅  Build complete"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""

@@ -1,0 +1,22 @@
+# nixpacks.toml — tells Railway to install both Python 3.11 AND Node 20
+# Without this, nixpacks only detects Python (no root package.json) and npm is missing.
+
+providers = []          # disable auto-detection; we declare everything explicitly
+
+[phases.setup]
+nixPkgs = [
+  "python311",
+  "python311Packages.pip",
+  "nodejs_20",
+  "nodePackages.npm",
+]
+
+[phases.install]
+# Intentionally empty — build.sh handles pip install + npm ci in the right order
+cmds = []
+
+[phases.build]
+cmds = ["make railway-build"]
+
+[start]
+cmd = "make railway-start"

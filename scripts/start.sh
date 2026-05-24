@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 # =============================================================================
-# scripts/start.sh — Railway start script
-# Called by railway.toml startCommand = "make railway-start"
+# scripts/start.sh — Railway start
 # =============================================================================
-set -euo pipefail
+set -eo pipefail
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Umoja Exchange — Starting Gunicorn"
+echo "  Umoja Exchange — Starting"
 echo "  Port: ${PORT:-8000}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
 cd backend
+
+# Run any pending migrations that may have been skipped at build time
+python manage.py migrate --run-syncdb
 
 exec gunicorn config.wsgi:application \
     --bind "0.0.0.0:${PORT:-8000}" \
