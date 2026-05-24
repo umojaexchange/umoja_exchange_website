@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # =============================================================================
 # scripts/start.sh — Railway RUNTIME start
-# DB is reachable here — run migrations before gunicorn.
+# DB is reachable here — run migrations before starting the server.
+# Use "python -m gunicorn" not "gunicorn" — the bin may not be on PATH
+# when pip installs into the Nix Python environment.
 # =============================================================================
 set -eo pipefail
 
@@ -21,7 +23,7 @@ python manage.py create_default_admin
 echo "✅  Admin ready"
 
 echo "▶ Starting Gunicorn..."
-exec gunicorn config.wsgi:application \
+exec python -m gunicorn config.wsgi:application \
     --bind "0.0.0.0:${PORT:-8000}" \
     --workers 2 \
     --timeout 120 \
