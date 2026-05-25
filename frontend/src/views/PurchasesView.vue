@@ -2,10 +2,10 @@
   <div class="animate-up">
     <!-- ── Stats ────────────────────────────────────────────────── -->
     <div class="stats-grid" style="margin-bottom:20px">
-      <StatCard :label="t('totalPurchases')" :value="store.total" icon="📦" color="#FACC15" :loading="store.loading" sub="All time" />
-      <StatCard :label="t('totalUSDTBought')" :value="fmtN(pageSums.usdt)+' USDT'" icon="🪙" color="#3B82F6" :loading="store.loading" sub="On this page" />
-      <StatCard :label="t('totalSpent')" :value="'TZS '+fmtS(pageSums.paid)" icon="💸" color="#10B981" :loading="store.loading" sub="On this page" />
-      <StatCard :label="t('remainingStock')" :value="fmtN(store.inventory.total_available_usdt)+' USDT'" icon="🏦" color="#8B5CF6" :loading="store.loading" :sub="store.inventory.active_lots+' active lots'" />
+      <StatCard :label="t('totalPurchases')" :value="store.total"  :icon="Briefcase" color="#FACC15" :loading="store.loading" sub="All time" />
+      <StatCard :label="t('totalUSDTBought')" :value="fmtN(pageSums.usdt)+' USDT'" :icon="Package" color="#3B82F6" :loading="store.loading" sub="On this page" />
+      <StatCard :label="t('totalSpent')" :value="'TZS '+fmtS(pageSums.paid)"  :icon="Banknote" color="#10B981" :loading="store.loading" sub="On this page" />
+      <StatCard :label="t('remainingStock')" :value="fmtN(store.inventory.total_available_usdt)+' USDT'"  :icon="ShoppingBag" color="#8B5CF6" :loading="store.loading" :sub="store.inventory.active_lots+' active lots'" />
     </div>
 
     <!-- ── Page header ──────────────────────────────────────────── -->
@@ -189,6 +189,23 @@ import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
 import PurchaseForm from '@/components/purchases/PurchaseForm.vue'
 import StatCard from '@/components/dashboard/KpiCard.vue'
+import {
+  AlertTriangle,
+  Briefcase,
+  Package,
+  TrendingUp,
+  Users,
+  Sun,
+  CalendarDays,
+  Calendar,
+  Trophy,
+  BarChart2,
+  PieChart,
+  ShoppingCart,
+  ShoppingBag,
+  Banknote,
+  CreditCard,
+} from 'lucide-vue-next'
 
 const store = usePurchasesStore()
 const { t } = useI18n()

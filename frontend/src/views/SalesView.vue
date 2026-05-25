@@ -2,10 +2,10 @@
   <div class="animate-up">
     <!-- ── Stats ────────────────────────────────────────────────── -->
     <div class="stats-grid" style="margin-bottom:20px">
-      <StatCard :label="t('totalSales')" :value="store.total" icon="💸" color="#FACC15" :loading="store.loading" sub="All time" />
-      <StatCard :label="t('totalUSDTSold')" :value="fmtN(pageSums.usdt)+' USDT'" icon="🪙" color="#10B981" :loading="store.loading" sub="On this page" />
-      <StatCard :label="t('totalRevenue')" :value="'TZS '+fmtS(pageSums.paid)" icon="💰" color="#3B82F6" :loading="store.loading" sub="On this page" />
-      <StatCard :label="t('totalProfit')" :value="'TZS '+fmtS(pageSums.profit)" icon="📈" color="#8B5CF6" :loading="store.loading" :sub="pageSums.profit>0?'Positive':'Check rates'" />
+      <StatCard :label="t('totalSales')" :value="store.total" :icon="CreditCard" color="#FACC15" :loading="store.loading" sub="All time" />
+      <StatCard :label="t('totalUSDTSold')" :value="fmtN(pageSums.usdt)+' USDT'" :icon="Package" color="#10B981" :loading="store.loading" sub="On this page" />
+      <StatCard :label="t('totalRevenue')" :value="'TZS '+fmtS(pageSums.paid)" :icon="Trophy" color="#3B82F6" :loading="store.loading" sub="On this page" />
+      <StatCard :label="t('totalProfit')" :value="'TZS '+fmtS(pageSums.profit)" :icon="Banknote" color="#8B5CF6" :loading="store.loading" :sub="pageSums.profit>0?'Positive':'Check rates'" />
     </div>
 
     <!-- ── Page header ──────────────────────────────────────────── -->
@@ -217,6 +217,23 @@ import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
 import SaleForm from '@/components/sales/SaleForm.vue'
 import StatCard from '@/components/dashboard/KpiCard.vue'
+import {
+  AlertTriangle,
+  Briefcase,
+  Package,
+  TrendingUp,
+  Users,
+  Sun,
+  CalendarDays,
+  Calendar,
+  Trophy,
+  BarChart2,
+  PieChart,
+  ShoppingCart,
+  ShoppingBag,
+  Banknote,
+  CreditCard,
+} from 'lucide-vue-next'
 
 const store = useSalesStore()
 const authStore = useAuthStore()

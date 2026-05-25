@@ -16,7 +16,8 @@
     "vue-router": "^4.3.3",
     "vue-chartjs": "^5.3.1",
     "@vueuse/core": "^10.11.0",
-    "date-fns": "^3.6.0"
+    "date-fns": "^3.6.0",
+    "lucide-vue-next": "^1.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",
