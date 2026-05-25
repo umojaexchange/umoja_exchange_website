@@ -630,3 +630,91 @@ body {
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-full { grid-column: 1 / -1; }
+
+/* ── Sidebar theme-aware ─────────────────────────────────────── */
+.sidebar {
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+}
+
+/* Text that was hardcoded white */
+.sidebar-text-primary  { color: var(--text); }
+.logo-sub              { color: var(--text-muted); }
+.nav-section-label     { color: var(--text-muted); }
+
+/* Nav items */
+.nav-item {
+  color: var(--text-muted);
+}
+.nav-item:hover {
+  background: var(--bg-hover, rgba(0,0,0,0.04));
+  color: var(--text);
+}
+.nav-item.active {
+  background: rgba(250, 204, 21, 0.1);
+  color: var(--yellow-dark, #FACC15);
+}
+
+/* Sub items */
+.nav-sub-item          { color: var(--text-muted); }
+.nav-sub-item:hover    { color: var(--text); }
+.nav-sub-item.active   { color: var(--yellow-dark, #FACC15); }
+
+/* Collapse button */
+.sidebar-collapse-btn {
+  margin: 0 8px 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all .2s;
+}
+.sidebar-collapse-btn:hover {
+  background: rgba(250, 204, 21, 0.1);
+  color: var(--yellow-dark, #FACC15);
+}
+
+/* User card */
+.user-card             { border-top: 1px solid var(--border); }
+.user-name             { color: var(--text); }
+.user-role             { color: var(--text-muted); }
+
+/* Logout button */
+.sidebar-logout-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 6px;
+  transition: all .2s;
+}
+.sidebar-logout-btn:hover { color: #EF4444; }
+
+/* Tooltip (collapsed state label) */
+.tooltip {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ── Light mode overrides ────────────────────────────────────── */
+:root {
+  --bg-hover: rgba(0, 0, 0, 0.04);
+}
+
+/* ── Dark mode overrides ─────────────────────────────────────── */
+.dark {
+  --bg-hover: rgba(255, 255, 255, 0.05);
+}

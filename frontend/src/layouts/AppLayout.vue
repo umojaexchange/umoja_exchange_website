@@ -1,6 +1,5 @@
 <template>
   <div class="app-layout">
-    <!-- Mobile overlay -->
     <div v-if="mobileOpen" class="sidebar-overlay" @click="mobileOpen=false" />
 
     <!-- ── SIDEBAR ──────────────────────────────────────────────── -->
@@ -11,7 +10,7 @@
       <div class="sidebar-logo">
         <div class="logo-icon">U</div>
         <div class="logo-text">
-          <div style="font-size:14px;font-weight:800;color:#fff;letter-spacing:0.5px">UMOJA</div>
+          <div style="font-size:14px;font-weight:800;letter-spacing:0.5px" class="sidebar-text-primary">UMOJA</div>
           <div class="logo-sub">Exchange</div>
         </div>
       </div>
@@ -21,14 +20,14 @@
         <div class="nav-section-label">{{ t('dashboard') === 'Dashibodi' ? 'KAZI' : 'MAIN' }}</div>
 
         <template v-for="item in navItems" :key="item.name">
-          <!-- Item with sub-menu -->
           <template v-if="item.children">
             <div class="nav-item tooltip-wrap" :class="{ active: isParentActive(item) }"
                  @click="toggleSubmenu(item.name)">
               <span class="tooltip">{{ t(item.key) }}</span>
               <span class="nav-icon" v-html="item.icon" />
               <span class="nav-label">{{ t(item.key) }}</span>
-              <svg v-if="expanded" class="nav-label ml-auto" style="width:14px;height:14px;transition:transform .3s;flex-shrink:0"
+              <svg v-if="expanded" class="nav-label ml-auto"
+                   style="width:14px;height:14px;transition:transform .3s;flex-shrink:0"
                    :style="{ transform: openSubmenu===item.name ? 'rotate(180deg)' : 'none' }"
                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -42,7 +41,6 @@
             </div>
           </template>
 
-          <!-- Simple item -->
           <router-link v-else :to="item.to" class="nav-item tooltip-wrap"
                        :class="{ active: $route.name===item.routeName }"
                        @click="isMobile && (mobileOpen=false)">
@@ -54,71 +52,56 @@
         </template>
       </nav>
 
-      <!-- Collapse toggle (desktop) -->
-      <button v-if="!isMobile" @click="ui.toggleSidebar()"
-              style="margin:0 8px 8px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;gap:8px;font-size:12px;font-weight:600"
-              @mouseenter="e=>e.currentTarget.style.background='rgba(250,204,21,0.1)'"
-              @mouseleave="e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'">
-        <svg style="width:16px;height:16px;transition:transform .3s" :style="{transform:expanded?'rotate(180deg)':'none'}"
+      <!-- Collapse toggle -->
+      <button v-if="!isMobile" @click="ui.toggleSidebar()" class="sidebar-collapse-btn">
+        <svg style="width:16px;height:16px;transition:transform .3s"
+             :style="{ transform: expanded ? 'rotate(180deg)' : 'none' }"
              fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
         </svg>
-        <span class="nav-label" style="color:rgba(255,255,255,0.4);font-size:11px">Collapse</span>
+        <span class="nav-label" style="font-size:11px;font-weight:600">Collapse</span>
       </button>
 
       <!-- User -->
       <div class="sidebar-footer">
-        <div class="user-card" @click="showUserMenu=!showUserMenu">
+        <div class="user-card">
           <div class="user-avatar">{{ initials }}</div>
           <div class="user-info">
             <div class="user-name">{{ authStore.user?.full_name || authStore.user?.username }}</div>
             <div class="user-role">{{ authStore.user?.role }}</div>
           </div>
-          <button @click.stop="authStore.logout()" title="Logout"
-                  style="margin-left:auto;flex-shrink:0;background:transparent;border:none;cursor:pointer;color:rgba(255,255,255,0.3);padding:4px;border-radius:6px;transition:all .2s"
-                  class="nav-label"
-                  @mouseenter="e=>e.currentTarget.style.color='#EF4444'"
-                  @mouseleave="e=>e.currentTarget.style.color='rgba(255,255,255,0.3)'">
+          <button @click.stop="authStore.logout()" title="Logout" class="sidebar-logout-btn nav-label">
             <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>
           </button>
         </div>
       </div>
     </aside>
 
-    <!-- Sidebar spacer (desktop) -->
+    <!-- Sidebar spacer -->
     <div v-if="!isMobile" class="sidebar-spacer" :style="{ width: expanded ? '260px' : '72px' }" />
 
-    <!-- ── MAIN ──────────────────────────────────────────────────── -->
+    <!-- ── MAIN (unchanged) ─────────────────────────────────────── -->
     <div class="main-content">
-      <!-- Topbar -->
       <header class="topbar">
-        <!-- Mobile/Collapse toggle -->
         <button class="topbar-icon-btn" @click="isMobile ? mobileOpen=!mobileOpen : ui.toggleSidebar()">
           <svg style="width:18px;height:18px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
-
-        <!-- Page info -->
         <div style="flex:0 0 auto">
           <div class="page-title">{{ pageTitle }}</div>
           <div class="breadcrumb">{{ formattedDate }}</div>
         </div>
-
-        <!-- Spacer -->
         <div style="flex:1"/>
-
-        <!-- Search -->
         <div class="topbar-search" style="max-width:260px">
           <svg style="width:15px;height:15px;color:var(--text-light);flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
           </svg>
           <input :placeholder="t('search')" />
         </div>
-
-        <!-- Theme toggle -->
         <button class="topbar-icon-btn" @click="ui.toggleTheme()" :title="ui.isDark ? 'Light mode' : 'Dark mode'">
           <svg v-if="ui.isDark" style="width:17px;height:17px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -127,14 +110,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
           </svg>
         </button>
-
-        <!-- Language toggle -->
         <div style="display:flex;gap:4px;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:4px">
           <button :class="['topbar-icon-btn lang-btn', { active: lang==='en' }]" @click="setLang('en')">EN</button>
           <button :class="['topbar-icon-btn lang-btn', { active: lang==='sw' }]" @click="setLang('sw')">SW</button>
         </div>
-
-        <!-- User pill -->
         <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;cursor:pointer"
              @click="authStore.logout()">
           <div style="width:28px;height:28px;background:var(--yellow);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#0F0F0F">
@@ -146,8 +125,6 @@
           </div>
         </div>
       </header>
-
-      <!-- Page content -->
       <main class="page-content">
         <router-view />
       </main>
@@ -156,6 +133,7 @@
     <ToastContainer />
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'

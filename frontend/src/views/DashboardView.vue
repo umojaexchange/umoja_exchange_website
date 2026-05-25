@@ -161,16 +161,23 @@ const periods = [{ key: 'daily' }, { key: 'weekly' }, { key: 'monthly' }, { key:
 
 onMounted(() => store.fetchAll())
 
-const fmt  = (v) => v != null ? Number(v).toLocaleString('en-TZ', { maximumFractionDigits: 0 }) : '—'
-const fmtS = (v) => {
+const fmt = (v) => {
   if (v == null) return '—'
-  const n = Number(v)
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + 'B'
-  if (n >= 1_000_000)     return (n / 1_000_000).toFixed(1)     + 'M'
-  if (n >= 1_000)         return (n / 1_000).toFixed(1)         + 'K'
-  return n.toLocaleString()
+
+  return Number(v).toLocaleString('en-TZ', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  })
 }
 
+const fmtS = (v) => {
+  if (v == null) return '—'
+
+  return Number(v).toLocaleString('en-TZ', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  })
+}
 const periodLabel = computed(() => ({
   daily:   'Last 30 days',
   weekly:  'Last 8 weeks',

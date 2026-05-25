@@ -283,9 +283,22 @@ const detailStats = computed(() => detailItem.value ? [
   { label: 'Profit Margin', value: fmtN(detailItem.value.profit_margin)+' TZS', color: '#16A34A' },
   { label: 'Total Profit', value: 'TZS '+fmtN(detailItem.value.profit_tzs), color: '#16A34A' },
 ] : [])
+// Formatters
+const fmtN = (v) =>
+  v != null
+    ? Number(v).toLocaleString('en-TZ', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : '—'
 
-const fmtN = (v) => v!=null ? Number(v).toLocaleString('en-TZ',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'
-const fmtS = (v) => { if(!v) return '—'; const n=Number(v); return n>=1e9?(n/1e9).toFixed(1)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n.toLocaleString() }
+const fmtS = (v) =>
+  v != null
+    ? Number(v).toLocaleString('en-TZ', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      })
+    : '—'
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-TZ',{day:'2-digit',month:'short',year:'numeric'}) : '—'
 
 function buildParams() {
