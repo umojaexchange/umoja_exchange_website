@@ -64,9 +64,6 @@ class SaleDetailView(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_destroy(self, instance):
-        if not self.request.user.is_admin:
-            from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Only admins can delete sales.")
         log_action(
             self.request.user, "DELETE", "sales.Sale", instance.id,
             f"Deleted sale #{instance.id} — {instance.usdt_amount} USDT to {instance.customer_name}",
