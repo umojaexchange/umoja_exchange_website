@@ -7,10 +7,6 @@
       </button>
     </div>
 
-    <div v-if="!authStore.isAdmin" class="warning-banner" style="margin-bottom:16px">
-      🔒 {{ t('readOnly') }}
-    </div>
-
     <div v-if="store.loading" style="padding:60px;text-align:center"><div class="spinner" /></div>
 
     <template v-else-if="store.data">
