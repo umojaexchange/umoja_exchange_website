@@ -4,14 +4,15 @@ Management command: create_default_admin
 Creates a default superuser on first deploy using environment variables.
 Safe to re-run — skips creation if the user already exists.
 
-Environment variables (set in Railway dashboard):
+Environment variables (set in the server .env — see backend/.env.production.example):
   DJANGO_ADMIN_USERNAME  (default: admin)
   DJANGO_ADMIN_EMAIL     (default: admin@umojaexchange.com)
   DJANGO_ADMIN_PASSWORD  (default: Admin@1234! — CHANGE THIS)
 """
 import os
-from django.core.management.base import BaseCommand
+
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

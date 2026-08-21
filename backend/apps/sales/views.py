@@ -1,13 +1,14 @@
-from rest_framework import generics, filters, status
+import django_filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django_filters.rest_framework import DjangoFilterBackend
-import django_filters
+
+from apps.audit_logs.utils import log_action
 
 from .models import Sale
-from .serializers import SaleSerializer, SaleCreateSerializer, execute_fifo_sale, reverse_fifo_sale
-from apps.audit_logs.utils import log_action
+from .serializers import SaleCreateSerializer, SaleSerializer, execute_fifo_sale, reverse_fifo_sale
 
 
 class SaleFilter(django_filters.FilterSet):

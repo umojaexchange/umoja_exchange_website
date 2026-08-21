@@ -1,21 +1,22 @@
-import dj_database_url
 from .base import *  # noqa
-from decouple import config
+from decouple import config, Csv
 
 DEBUG = False
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default=config("DATABASE_URL"),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Comma-separated list, e.g. "umojaexchange.co.tz,www.umojaexchange.co.tz"
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost", cast=Csv())
 
-# Railway terminates SSL at the proxy — do NOT redirect here.
-# If Django redirects the healthcheck (HTTP→HTTPS 301), Railway sees it as
-# "service unavailable" and the deploy fails.
-SECURE_SSL_REDIRECT = False
+# DATABASES comes from base.py (driven by DB_ENGINE / DATABASE_URL in .env).
+# On the server set DB_ENGINE=mysql + DB_* (with DB_HOST=localhost).
+
+# ── SECURITY ─────────────────────────────────────────────────────────────────
+# Apache (with AutoSSL / Let's Encrypt) terminates TLS in front of Passenger and
+# forwards X-Forwarded-Proto, so trust that header for request.is_secure().
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Redirect HTTP→HTTPS in Django. Turn OFF (SECURE_SSL_REDIRECT=False in .env)
+# only if you haven't enabled SSL yet, otherwise the site becomes unreachable.
+SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
@@ -23,10 +24,11 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
-# HSTS — only safe once SSL redirect is handled by the proxy, not Django
-SECURE_HSTS_SECONDS = 31536000
+# Django 4+ requires the scheme in CSRF_TRUSTED_ORIGINS.
+# e.g. "https://umojaexchange.co.tz,https://www.umojaexchange.co.tz"
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+
+# HSTS — safe once SSL is live. Start small (e.g. 3600) if unsure, then raise.
+SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=31536000, cast=int)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
-
-# Tell Django to trust Railway's X-Forwarded-Proto header so request.is_secure() works
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

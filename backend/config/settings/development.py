@@ -2,12 +2,8 @@ from .base import *  # noqa
 
 DEBUG = True
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# DATABASES comes from base.py (driven by DB_ENGINE / DATABASE_URL in .env).
+# Locally that defaults to SQLite — no DB server needed.
 
 # Allow Vite dev server during local development
 CORS_ALLOW_ALL_ORIGINS = True

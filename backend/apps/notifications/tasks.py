@@ -1,5 +1,6 @@
 from celery import shared_task
 
+
 @shared_task(name="apps.notifications.tasks.send_daily_report_task")
 def send_daily_report_task():
     from .email import send_daily_report

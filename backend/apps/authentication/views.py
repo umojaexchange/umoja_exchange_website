@@ -1,18 +1,19 @@
-from rest_framework import status, generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from apps.audit_logs.utils import log_action
 
 from .models import User
 from .serializers import (
-    CustomTokenObtainPairSerializer,
-    UserSerializer,
-    UserCreateSerializer,
     ChangePasswordSerializer,
+    CustomTokenObtainPairSerializer,
+    UserCreateSerializer,
+    UserSerializer,
 )
-from apps.audit_logs.utils import log_action
 
 
 class LoginView(TokenObtainPairView):

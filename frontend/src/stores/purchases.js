@@ -21,7 +21,7 @@ export const usePurchasesStore = defineStore('purchases', () => {
     try {
       const { data } = await purchasesApi.inventory()
       Object.assign(inventory, data)
-    } catch {}
+    } catch { /* inventory is optional */ }
   }
 
   async function create(payload) {

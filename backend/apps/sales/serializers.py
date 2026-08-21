@@ -1,8 +1,10 @@
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
+
 from django.db import transaction
 from rest_framework import serializers
 
 from apps.purchases.models import InventoryLot
+
 from .models import Sale, SaleLot
 
 

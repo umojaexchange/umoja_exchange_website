@@ -1,6 +1,8 @@
-from pathlib import Path
-from decouple import config
 from datetime import timedelta
+from pathlib import Path
+
+from decouple import config
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -102,6 +104,76 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ── DATABASE (dynamic — chosen from .env, same settings everywhere) ─────────────
+# Precedence:
+#   1. DATABASE_URL  — a full URL for any backend (e.g. mysql://…, postgres://…)
+#   2. DB_ENGINE     — "sqlite" (default) | "mysql" | "postgres"
+#
+# Local:  DB_ENGINE=sqlite  (or leave unset) → backend/db.sqlite3, no server needed.
+# Server: DB_ENGINE=mysql   + DB_NAME/DB_USER/DB_PASSWORD (+ DB_HOST=localhost).
+DB_ENGINE = config("DB_ENGINE", default="").lower()
+
+if DB_ENGINE:
+    # An explicit DB_ENGINE always wins — a stray DATABASE_URL (e.g. left in the
+    # cPanel Python App env vars) is ignored, so it can't silently hijack the DB.
+    if DB_ENGINE in ("sqlite", "sqlite3"):
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
+    elif DB_ENGINE in ("mysql", "mariadb"):
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.mysql",
+                "NAME": config("DB_NAME"),
+                "USER": config("DB_USER"),
+                "PASSWORD": config("DB_PASSWORD"),
+                "HOST": config("DB_HOST", default="localhost"),
+                "PORT": config("DB_PORT", default="3306"),
+                "CONN_MAX_AGE": 600,
+                "OPTIONS": {
+                    "charset": "utf8mb4",
+                    "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+                },
+            }
+        }
+    elif DB_ENGINE in ("postgres", "postgresql"):
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": config("DB_NAME"),
+                "USER": config("DB_USER"),
+                "PASSWORD": config("DB_PASSWORD"),
+                "HOST": config("DB_HOST", default="localhost"),
+                "PORT": config("DB_PORT", default="5432"),
+                "CONN_MAX_AGE": 600,
+                "CONN_HEALTH_CHECKS": True,
+            }
+        }
+    else:
+        raise ImproperlyConfigured(
+            f"Unknown DB_ENGINE '{DB_ENGINE}' — use sqlite, mysql, or postgres."
+        )
+elif config("DATABASE_URL", default=""):
+    # No DB_ENGINE set — fall back to a full DATABASE_URL if provided.
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.parse(
+            config("DATABASE_URL"), conn_max_age=600, conn_health_checks=True
+        )
+    }
+else:
+    # Nothing configured → SQLite (local dev default).
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # ── REST FRAMEWORK ─────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {

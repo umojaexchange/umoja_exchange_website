@@ -1,13 +1,14 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from django.db.models import Sum, Count, Avg
-from django.db.models.functions import TruncDay, TruncMonth, TruncWeek
-from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 
-from apps.purchases.models import Purchase, InventoryLot
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncDay, TruncMonth
+from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from apps.purchases.models import InventoryLot, Purchase
 from apps.sales.models import Sale
 from apps.settings_app.models import SystemSettings
 

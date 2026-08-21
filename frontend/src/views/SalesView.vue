@@ -212,31 +212,18 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useSalesStore } from '@/stores/sales'
-import { useAuthStore } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
 import SaleForm from '@/components/sales/SaleForm.vue'
 import StatCard from '@/components/dashboard/KpiCard.vue'
 import {
-  AlertTriangle,
-  Briefcase,
   Package,
-  TrendingUp,
-  Users,
-  Sun,
-  CalendarDays,
-  Calendar,
   Trophy,
-  BarChart2,
-  PieChart,
-  ShoppingCart,
-  ShoppingBag,
   Banknote,
   CreditCard,
 } from 'lucide-vue-next'
 
 const store = useSalesStore()
-const authStore = useAuthStore()
 const { t } = useI18n()
 const toast = useToast()
 

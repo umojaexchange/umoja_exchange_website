@@ -1,12 +1,11 @@
 """Resend email integration for automated reports."""
+
 import resend
 from django.conf import settings
 from django.utils import timezone
-from decimal import Decimal
 
-from apps.purchases.models import Purchase
+from apps.purchases.models import InventoryLot, Purchase
 from apps.sales.models import Sale
-from apps.purchases.models import InventoryLot
 from apps.settings_app.models import SystemSettings
 
 
@@ -21,7 +20,7 @@ def build_daily_report_html(date=None):
     purchases_today = Purchase.objects.filter(created_at__date=date)
     sales_today = Sale.objects.filter(created_at__date=date)
 
-    from django.db.models import Sum, Count
+    from django.db.models import Count, Sum
     p_agg = purchases_today.aggregate(total_usdt=Sum("usdt_amount"), total_tzs=Sum("amount_paid_tzs"), count=Count("id"))
     s_agg = sales_today.aggregate(total_usdt=Sum("usdt_amount"), total_tzs=Sum("paid_amount_tzs"), total_profit=Sum("profit_tzs"), count=Count("id"))
 
@@ -93,7 +92,5 @@ def send_daily_report(date=None):
 
 
 def send_monthly_report():
-    from django.utils import timezone
-    now = timezone.now()
     # Send report for previous month
     return send_daily_report()

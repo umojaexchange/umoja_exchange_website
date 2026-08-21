@@ -1,14 +1,15 @@
-from rest_framework import generics, filters, status
+import django_filters
+from django.db.models import Sum
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum
-import django_filters
 
-from .models import Purchase, InventoryLot
-from .serializers import PurchaseSerializer
 from apps.audit_logs.utils import log_action
+
+from .models import InventoryLot, Purchase
+from .serializers import PurchaseSerializer
 
 
 class PurchaseFilter(django_filters.FilterSet):
@@ -78,7 +79,6 @@ class PurchaseDetailView(generics.RetrieveUpdateDestroyAPIView):
 @permission_classes([IsAuthenticated])
 def inventory_summary(request):
     """Returns total available USDT inventory."""
-    from django.db.models import Sum
     total = InventoryLot.objects.filter(remaining__gt=0).aggregate(
         total_usdt=Sum("remaining"),
         total_lots=Sum("id"),

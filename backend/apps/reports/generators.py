@@ -1,20 +1,18 @@
 """
 Report generators for PDF (reportlab) and Excel (openpyxl).
 """
-from io import BytesIO
 from datetime import datetime
 from decimal import Decimal
-
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from io import BytesIO
 
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm
+from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Table, TableStyle
 
 YELLOW = colors.HexColor("#FACC15")
 BLACK = colors.HexColor("#0F0F0F")
@@ -34,7 +32,6 @@ def generate_pdf_report(report_type, queryset, date_from=None, date_to=None):
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle("Title", parent=styles["Normal"], fontSize=18, fontName="Helvetica-Bold", textColor=BLACK, spaceAfter=6)
     sub_style = ParagraphStyle("Sub", parent=styles["Normal"], fontSize=10, textColor=colors.HexColor("#4B5563"), spaceAfter=12)
-    header_style = ParagraphStyle("Header", parent=styles["Normal"], fontSize=9, fontName="Helvetica-Bold", textColor=WHITE)
 
     elements = []
 
@@ -126,7 +123,6 @@ def generate_excel_report(report_type, queryset, date_from=None, date_to=None):
     ws.title = report_type.capitalize()
 
     # Styles
-    yellow_fill = PatternFill(start_color="FACC15", end_color="FACC15", fill_type="solid")
     black_fill = PatternFill(start_color="0F0F0F", end_color="0F0F0F", fill_type="solid")
     light_fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid")
     yellow_font = Font(name="Calibri", bold=True, color="0F0F0F", size=11)
@@ -174,7 +170,7 @@ def _apply_row(ws, row_num, values, is_header=False, is_total=False, black_fill=
     for col, val in enumerate(values, 1):
         c = ws.cell(row=row_num, column=col, value=val)
         c.border = thin
-        c.alignment = right if isinstance(val, (int, float)) else left
+        c.alignment = right if isinstance(val, int | float) else left
         if is_header:
             c.fill = black_fill
             c.font = header_font

@@ -1,2 +1,4 @@
 -r base.txt
 sentry-sdk[django]==2.5.1
+
+PyMySQL==1.1.1

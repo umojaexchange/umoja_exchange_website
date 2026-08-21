@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    try { await authApi.logout({ refresh: localStorage.getItem('umoja_refresh') }) } catch {}
+    try { await authApi.logout({ refresh: localStorage.getItem('umoja_refresh') }) } catch { /* logout is best-effort */ }
     token.value = ''; user.value = null
     localStorage.removeItem('umoja_token'); localStorage.removeItem('umoja_refresh'); localStorage.removeItem('umoja_user')
     router.push('/login')

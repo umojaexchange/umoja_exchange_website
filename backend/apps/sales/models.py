@@ -1,6 +1,8 @@
-from django.db import models
+from decimal import Decimal
+
 from django.core.validators import MinValueValidator
-from decimal import Decimal, ROUND_HALF_UP
+from django.db import models
+
 from apps.purchases.models import PAYMENT_CHOICES
 
 

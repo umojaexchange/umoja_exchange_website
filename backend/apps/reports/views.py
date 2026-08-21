@@ -1,10 +1,13 @@
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .generators import generate_pdf_report, generate_excel_report
+
+from apps.audit_logs.utils import log_action
 from apps.purchases.models import Purchase
 from apps.sales.models import Sale
-from apps.audit_logs.utils import log_action
+
+from .generators import generate_excel_report, generate_pdf_report
+
 
 def _filter_qs(qs, request):
     date_from = request.query_params.get("date_from")

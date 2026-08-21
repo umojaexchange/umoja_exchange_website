@@ -1,0 +1,29 @@
+# Ruff config for the Django backend. Run: ruff check .   (auto-fix: ruff check --fix .)
+target-version = "py311"
+line-length = 100
+
+# Generated / vendored code shouldn't be linted.
+extend-exclude = [
+    "migrations",
+    "frontend_build",
+    "staticfiles",
+    "media",
+    "*/__pycache__/*",
+]
+
+[lint]
+# E/W: pycodestyle, F: pyflakes (real errors), I: import order,
+# B: bugbear, UP: pyupgrade, DJ: Django-specific checks.
+select = ["E", "W", "F", "I", "B", "UP", "DJ"]
+ignore = [
+    "E501",   # line length — handled by formatter, don't block deploys on it
+    "B008",   # function calls in argument defaults (common in DRF)
+    "DJ012",  # model method ordering — stylistic, not worth reshuffling bodies
+]
+
+[lint.per-file-ignores]
+"config/settings/*.py" = ["F403", "F405"]  # `from .base import *` is intentional
+"**/__init__.py" = ["F401"]                # re-exports
+
+[lint.isort]
+known-first-party = ["apps", "config"]

@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Purchase, InventoryLot, PAYMENT_CHOICES
+
+from .models import InventoryLot, Purchase
 
 
 class InventoryLotSerializer(serializers.ModelSerializer):

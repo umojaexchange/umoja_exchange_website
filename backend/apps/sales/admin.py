@@ -1,5 +1,7 @@
 from django.contrib import admin
+
 from .models import Sale, SaleLot
+
 
 class SaleLotInline(admin.TabularInline):
     model = SaleLot

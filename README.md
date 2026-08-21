@@ -6,14 +6,14 @@
 
 ![Django](https://img.shields.io/badge/Backend-Django%205-green?style=flat-square)
 ![Vue](https://img.shields.io/badge/Frontend-Vue%203-brightgreen?style=flat-square)
-![Deploy](https://img.shields.io/badge/Deploy-Railway%20%28single%20service%29-purple?style=flat-square)
+![Deploy](https://img.shields.io/badge/Deploy-cPanel%20%28SSH%20%2B%20MySQL%29-orange?style=flat-square)
 
 ---
 
 ## How the Monorepo Works
 
 ```
-Browser request to https://your-app.railway.app/
+Browser request to https://umojaexchange.co.tz/
 │
 ├─ /api/v1/**        → Django REST Framework  (JSON)
 ├─ /admin/**         → Django admin panel
@@ -22,18 +22,19 @@ Browser request to https://your-app.railway.app/
                              └─ Vue Router takes over client-side
 ```
 
-**Build pipeline (Railway):**
+**Deploy pipeline (cPanel — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)):**
 ```
-npm run build          # Vue → backend/frontend_build/
-collectstatic          # frontend_build/ → backend/staticfiles/ (WhiteNoise)
-migrate                # Apply DB migrations
-gunicorn               # One process serves everything
+npm run build          # Vue → backend/frontend_build/          (local)
+collectstatic          # frontend_build/ → backend/staticfiles/ (local)
+rsync over SSH         # backend/ → cPanel Application root
+migrate                # Apply DB migrations on the server (MySQL)
+touch tmp/restart.txt  # Passenger reloads — one app serves everything
 ```
 
 **Local development (two terminals):**
 ```
-Terminal 1:  make dev            # Django on :8000
-Terminal 2:  make dev-frontend   # Vite on :5173 (proxies /api → :8000)
+Terminal 1:  cd backend && python manage.py runserver   # Django on :8000
+Terminal 2:  cd frontend && npm run dev                  # Vite on :5173 (proxies /api → :8000)
 ```
 
 ---
@@ -55,25 +56,26 @@ source venv/bin/activate
 venv\Scripts\activate
 
 # 1. Install everything
-make install
+cd backend && pip install -r requirements/development.txt && cd ..
+cd frontend && npm install && cd ..
 
 # 2. Configure environment
 cp .env.example .env
 # Edit .env — set SECRET_KEY at minimum
 
 # 3. Apply migrations
-make migrate
+cd backend && python manage.py migrate
 
 # 4. Create admin user
-make superuser
+cd backend && python manage.py createsuperuser
 
 # Option A — Django only (build Vue first)
-make build
-make dev          # → http://localhost:8000
+cd frontend && npm run build && cd ..
+cd backend && python manage.py runserver     # → http://localhost:8000
 
 # Option B — Hot-reload frontend (two terminals)
-make dev          # Terminal 1 → http://localhost:8000
-make dev-frontend # Terminal 2 → http://localhost:5173
+cd backend && python manage.py runserver     # Terminal 1 → http://localhost:8000
+cd frontend && npm run dev                    # Terminal 2 → http://localhost:5173
 ```
 
 > In **Option B** the Vite dev server (`localhost:5173`) proxies all `/api/`
@@ -90,7 +92,7 @@ umoja_exchange/
 │   │   ├── settings/
 │   │   │   ├── base.py          ← Shared; STATICFILES_DIRS → frontend_build/
 │   │   │   ├── development.py   ← SQLite + DEBUG
-│   │   │   └── production.py    ← PostgreSQL + security headers
+│   │   │   └── production.py    ← MySQL + security headers
 │   │   ├── urls.py              ← API routes + SPA catch-all
 │   │   ├── celery.py
 │   │   └── wsgi.py
@@ -108,7 +110,9 @@ umoja_exchange/
 │   ├── requirements/
 │   │   ├── base.txt
 │   │   ├── development.txt
-│   │   └── production.txt
+│   │   └── production.txt        ← + mysqlclient
+│   ├── passenger_wsgi.py         ← cPanel "Setup Python App" entry point
+│   ├── .env.production.example   ← Template for the server-side .env
 │   └── manage.py
 │
 ├── frontend/                    ← Vue 3 source
@@ -123,9 +127,11 @@ umoja_exchange/
 │   ├── vite.config.js           ← base: /static/, outDir: ../backend/frontend_build
 │   └── package.json
 │
-├── Makefile                     ← Dev shortcuts
-├── railway.toml                 ← Single-service Railway deploy
-├── .env.example
+├── docs/
+│   └── DEPLOYMENT.md            ← Full cPanel deploy guide
+├── deploy_cpanel.sh             ← Build + rsync + migrate + restart
+├── .env.example                 ← Local dev env
+├── .env.deploy.example          ← SSH/remote deploy config
 └── README.md
 ```
 
@@ -141,61 +147,66 @@ Copy `.env.example` → `.env`:
 | `SECRET_KEY` | ✅ | 50+ random chars |
 | `DEBUG` | ✅ | `True` dev, `False` prod |
 | `ALLOWED_HOSTS` | ✅ | Comma-separated |
-| `DATABASE_URL` | Prod | Auto-injected by Railway PostgreSQL add-on |
+| `CSRF_TRUSTED_ORIGINS` | Prod | Comma-separated, with scheme (e.g. `https://umojaexchange.co.tz`) |
+| `DB_NAME` / `DB_USER` / `DB_PASSWORD` | Prod | MySQL creds from cPanel (account-prefixed) |
+| `DB_HOST` / `DB_PORT` | Prod | Default `localhost` / `3306` |
+| `DATABASE_URL` | Optional | Overrides the `DB_*` vars if set (e.g. `mysql://…`) |
 | `RESEND_API_KEY` | Optional | Automated email reports |
 | `FROM_EMAIL` | Optional | Sender address |
 | `REPORT_EMAIL` | Optional | Daily report recipient |
 | `CORS_ALLOWED_ORIGINS` | Dev only | `http://localhost:5173` |
+
+> Production runtime vars live in `<Application root>/.env` on the server — see
+> [backend/.env.production.example](backend/.env.production.example). SSH/deploy
+> settings live in your local `.env.deploy` — see [.env.deploy.example](.env.deploy.example).
 
 The frontend has **no required env vars** in production — Axios uses the
 relative `/api/v1` base URL since frontend and backend share the same origin.
 
 ---
 
-## Deployment on Railway
+## Deployment on cPanel (SSH + MySQL)
 
-### 1 — New Project
+The app deploys to **cPanel** over **rsync/SSH**, running under **Passenger**
+("Setup Python App") and backed by **MySQL**. The full walkthrough — SSH keys,
+creating the MySQL database, the Python App, and the server `.env` — is in
+**[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**. Short version:
 
-1. [railway.app](https://railway.app) → **New Project**
-2. Add a **PostgreSQL** database add-on
-3. Connect your GitHub repository as a **single service**
+### 1 — One-time setup
 
-### 2 — Environment Variables
-
-Set in the Railway dashboard (Variables tab):
-
-```
-DJANGO_SETTINGS_MODULE = config.settings.production
-SECRET_KEY             = <generate below>
-DEBUG                  = False
-ALLOWED_HOSTS          = your-app.railway.app
-DATABASE_URL           = <auto-injected by Railway>
-RESEND_API_KEY         = re_xxxx
-FROM_EMAIL             = reports@umojaexchange.com
-REPORT_EMAIL           = admin@umojaexchange.com
-```
+- Generate an SSH deploy key into `.ssh/` and authorize it in cPanel.
+- Create the MySQL database + user (cPanel → MySQL Databases).
+- Create the Python App (cPanel → Setup Python App): Application root =
+  `umoja_exchange`, startup file = `passenger_wsgi.py`, entry point = `application`.
+- On the server, create `<Application root>/.env` from
+  [backend/.env.production.example](backend/.env.production.example).
+- Locally, `cp .env.deploy.example .env.deploy` and fill in SSH details +
+  the `VENV_ACTIVATE` command shown on the Python App page.
 
 Generate a secret key:
 ```bash
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
-### 3 — Deploy
+### 2 — Deploy
 
-Railway reads `railway.toml` automatically. Push to main → deploy triggers:
-
-```
-npm ci && npm run build                  # Vue compiled to backend/frontend_build/
-pip install -r requirements/production.txt
-python manage.py collectstatic --noinput  # assets → backend/staticfiles/
-python manage.py migrate
-gunicorn config.wsgi:application ...      # serves everything
-```
-
-### 4 — Create Admin User
-
-Open Railway shell for your service:
 ```bash
+./deploy_cpanel.sh             # build Vue + collectstatic (local) → rsync → migrate → restart
+./deploy_cpanel.sh --no-build  # same, skipping the Vue rebuild
+```
+
+Under the hood ([deploy_cpanel.sh](deploy_cpanel.sh)): the SPA is
+built and static collected **locally**, only finished files are rsynced (server
+needs no Node), then remotely `pip install → migrate → create_default_admin →
+touch tmp/restart.txt`.
+
+### 3 — Admin user
+
+The default admin is created automatically by `create_default_admin` from the
+`DJANGO_ADMIN_*` vars in the server `.env`. To create one manually instead:
+```bash
+ssh -i .ssh/umoja_deploy -p <SSH_PORT> <SSH_USER>@<SSH_HOST>
+source ~/virtualenv/umoja_exchange/3.11/bin/activate && cd ~/umoja_exchange
 python manage.py createsuperuser
 ```
 
@@ -232,15 +243,19 @@ Celery uses the **DB as its broker** — no Redis required.
 
 ```bash
 # Worker
-make celery-worker
+cd backend && celery -A config worker --loglevel=info
 
 # Beat (periodic tasks: daily report @ 23:59, monthly @ 1st 08:00)
-make celery-beat
+cd backend && celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 ```
 
-On Railway, add separate **Worker** and **Beat** services pointing to the same repo:
-- Worker start: `cd backend && celery -A config worker --loglevel=info`
-- Beat start: `cd backend && celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler`
+On cPanel, run the worker and beat as **cron jobs** (or via the Python App's
+"Execute python script" hook) against the app's virtualenv:
+- Worker: `cd ~/umoja_exchange && celery -A config worker --loglevel=info`
+- Beat: `cd ~/umoja_exchange && celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler`
+
+> Note: shared cPanel hosting often restricts long-running processes — check with
+> your host before relying on persistent Celery workers.
 
 ---
 
@@ -260,20 +275,35 @@ Deletion reverses the FIFO via `reverse_fifo_sale()`.
 
 ---
 
-## Makefile Reference
+## Command Reference
 
-```
-make install        Install Python + Node deps
-make migrate        Django migrate
-make superuser      Create admin user
-make dev            Django runserver :8000
-make dev-frontend   Vite dev server :5173 (hot reload)
-make build          Compile Vue → backend/frontend_build/
-make collectstatic  Django collectstatic
-make prod-local     build + collectstatic + gunicorn (local prod sim)
-make celery-worker  Start Celery worker
-make celery-beat    Start Celery beat
-make clean          Remove build artefacts
+```bash
+# Dependencies
+cd backend && pip install -r requirements/development.txt   # Python deps
+cd frontend && npm install                                  # Node deps
+
+# Backend (run from backend/)
+python manage.py migrate                                    # apply migrations (SQLite in dev)
+python manage.py createsuperuser                            # create admin user
+python manage.py runserver                                  # dev server :8000
+python manage.py collectstatic --noinput                    # gather static files
+
+# Lint (run before deploy; also gated inside deploy_cpanel.sh)
+cd backend && ruff check . && cd ../frontend && npm run lint
+cd backend && ruff check --fix .                            # auto-fix Python
+cd frontend && npm run lint:fix                             # auto-fix JS/Vue
+
+# Frontend (run from frontend/)
+npm run dev                                                 # Vite dev server :5173 (hot reload)
+npm run build                                               # compile Vue → backend/frontend_build/
+
+# Celery (run from backend/)
+celery -A config worker --loglevel=info
+celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+# Deploy to cPanel (see docs/DEPLOYMENT.md)
+./deploy_cpanel.sh                                          # build + rsync + migrate + restart
+./deploy_cpanel.sh --no-build                              # deploy without rebuilding the SPA
 ```
 
 ---

@@ -1,0 +1,9 @@
+# Phusion Passenger config for the cPanel Python App.
+# cPanel normally writes this block itself (Setup Python App → Restart rewrites it).
+# We ship it so a deploy that lands in the app root keeps Passenger pointed at the
+# app + venv. Paths are account-specific — update them if the account/venv changes.
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/umojaexc/public_html/portal.umojaexchange.co.tz"
+PassengerBaseURI "/"
+PassengerPython "/home/umojaexc/virtualenv/umoja_exchange/3.11/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END

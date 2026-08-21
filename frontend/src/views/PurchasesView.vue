@@ -190,21 +190,10 @@ import { useToast } from '@/composables/useToast'
 import PurchaseForm from '@/components/purchases/PurchaseForm.vue'
 import StatCard from '@/components/dashboard/KpiCard.vue'
 import {
-  AlertTriangle,
   Briefcase,
   Package,
-  TrendingUp,
-  Users,
-  Sun,
-  CalendarDays,
-  Calendar,
-  Trophy,
-  BarChart2,
-  PieChart,
-  ShoppingCart,
   ShoppingBag,
   Banknote,
-  CreditCard,
 } from 'lucide-vue-next'
 
 const store = usePurchasesStore()
