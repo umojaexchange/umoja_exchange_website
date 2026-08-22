@@ -220,5 +220,5 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 # ── EMAIL ──────────────────────────────────────────────────────────────────────
 RESEND_API_KEY = config("RESEND_API_KEY", default="")
-FROM_EMAIL = config("FROM_EMAIL", default="reports@umojaexchange.com")
+FROM_EMAIL = config("FROM_EMAIL", default="umojaexchange@gmail.com")
 REPORT_EMAIL = config("REPORT_EMAIL", default="")
