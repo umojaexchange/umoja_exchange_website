@@ -44,7 +44,10 @@ def main():
     call_command("collectstatic", "--noinput")
 
     print("▶ create_default_admin…")
-    call_command("create_default_admin")
+    try:
+        call_command("create_default_admin")
+    except Exception as e:
+        print(f"  ⚠ admin step skipped: {e}")
 
     print("▶ restart Passenger…")
     tmp = BASE_DIR / "tmp"

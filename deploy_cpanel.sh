@@ -9,19 +9,7 @@
 #           SSH → remote: pip install → deploy-check → DB backup → migrate →
 #           create admin → restart Passenger → health check.
 #
-# Config comes from .env.deploy (see .env.deploy.example). Run from repo root.
-#
-# Usage:
-#   ./deploy_cpanel.sh                 full deploy
-#   ./deploy_cpanel.sh --no-build      skip the Vue rebuild + collectstatic
-#   ./deploy_cpanel.sh --dry-run       preview the upload; no remote changes
-#   ./deploy_cpanel.sh --tar           force tar-over-SSH upload (no rsync needed)
-#   ./deploy_cpanel.sh --help
-#
-# Upload auto-falls back to tar-over-SSH when the server has no rsync.
-#
-# Env toggles: SKIP_LINT=true  SKIP_TESTS=true  SKIP_BACKUP=true
-# =============================================================================
+
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -288,7 +276,7 @@ try:
          "--host={}".format(d.get("HOST") or "localhost"),
          "--port={}".format(str(d.get("PORT") or "3306")),
          "--user={}".format(d.get("USER", "")),
-         "--single-transaction", "--quick", d["NAME"]],
+         "--single-transaction", "--quick", "--no-tablespaces", d["NAME"]],
         stdout=subprocess.PIPE)
     with open(out, "wb") as f:
         gz = subprocess.Popen(["gzip"], stdin=dump.stdout, stdout=f)
@@ -312,7 +300,7 @@ echo "▶ migrate…"
 python manage.py migrate --noinput
 
 echo "▶ create_default_admin…"
-python manage.py create_default_admin
+python manage.py create_default_admin || echo "  (admin step skipped — non-fatal)"
 
 echo "▶ restart Passenger…"
 mkdir -p tmp && touch tmp/restart.txt

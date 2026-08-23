@@ -13,6 +13,7 @@ import os
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+from django.db import IntegrityError
 
 
 class Command(BaseCommand):
@@ -25,20 +26,29 @@ class Command(BaseCommand):
         email    = os.environ.get("DJANGO_ADMIN_EMAIL",    "admin@umojaexchange.com")
         password = os.environ.get("DJANGO_ADMIN_PASSWORD", "Admin@1234!")
 
-        if User.objects.filter(username=username).exists():
-            self.stdout.write(
-                self.style.WARNING(f'⚠  Admin "{username}" already exists — skipping.')
-            )
+        # Skip if a user with this username OR email already exists
+        existing = User.objects.filter(username=username).first() or \
+            User.objects.filter(email=email).first()
+        if existing:
+            self.stdout.write(self.style.WARNING(
+                f'⚠  A user already exists (username="{existing.username}", '
+                f'email="{existing.email}") — skipping admin creation.'
+            ))
             return
 
-        User.objects.create_superuser(
-            username=username,
-            email=email,
-            password=password,
-            role="admin",
-            first_name="Umoja",
-            last_name="Admin",
-        )
+        try:
+            User.objects.create_superuser(
+                username=username,
+                email=email,
+                password=password,
+                role="admin",
+                first_name="Umoja",
+                last_name="Admin",
+            )
+        except IntegrityError as e:
+            # Never let a duplicate block a deploy — just report and move on.
+            self.stdout.write(self.style.WARNING(f"⚠  Admin not created ({e}) — skipping."))
+            return
 
         self.stdout.write(self.style.SUCCESS(
             f"\n"
