@@ -69,6 +69,9 @@ cd backend && python manage.py migrate
 # 4. Create admin user
 cd backend && python manage.py createsuperuser
 
+# 5. Run both frontend and backend at once
+sh dev.sh --seed  # → http://localhost:8000  & # Terminal 2 → http://localhost:5173
+
 # Option A — Django only (build Vue first)
 cd frontend && npm run build && cd ..
 cd backend && python manage.py runserver     # → http://localhost:8000

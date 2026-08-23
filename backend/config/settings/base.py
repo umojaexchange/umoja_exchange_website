@@ -89,7 +89,9 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Africa/Dar_es_Salaam"
 USE_I18N = True
-USE_TZ = True
+# Keep True locally (SQLite). Set USE_TZ=False on MySQL hosts whose timezone
+# tables aren't loaded — otherwise TruncDay/TruncMonth (CONVERT_TZ) fail with
+USE_TZ = config("USE_TZ", default=True, cast=bool)
 
 # ── STATIC FILES ───────────────────────────────────────────────────────────────
 # WhiteNoise serves STATIC_ROOT at the /static/ URL prefix.
